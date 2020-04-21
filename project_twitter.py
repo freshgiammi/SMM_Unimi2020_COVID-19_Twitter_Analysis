@@ -1,4 +1,5 @@
 import json
+import time
 import twitter
 import pandas as pd
 import random
@@ -28,7 +29,7 @@ print("Request completed.")
 tweets = response['statuses']
 
 #Ask more tweets range(n) times, if they are available. (n+1 return values)
-for i in range(99):
+for i in range(149):
     print("Indexing request",i+2,"..." ,end=" ")
     if 'next_results' in response['search_metadata']:
         max_id = dict([tuple(tok.split('=')) for tok in response['search_metadata']['next_results'][1:].split('&')])['max_id']
@@ -67,7 +68,8 @@ for t in tweets:
     tweetlist.append(tweetinfo_container)
 # ---------------- JSON PREFORMATTING  ---------------- #
 print("Preformatting completed. Saving to file...")
-with open('tweetlist_database.json', 'w') as outfile:
+
+with open("datasets/Twitter_Dataset_"+time.strftime("%Y%m%d-%H%M%S")+".json", 'x') as outfile:
     json.dump(tweetlist, outfile, indent=1)
 
 print("JSON tweetlist generated. Happy analysis!")
