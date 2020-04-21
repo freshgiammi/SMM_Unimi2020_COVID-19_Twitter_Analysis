@@ -22,25 +22,52 @@ twitter_api = twitter.Twitter(auth=twitter.OAuth2(bearer_token = bearer_token))
 
 #Query composition and request
 query = '#COVID19'
+print("Indexing request 1 ..." ,end=" ")
 response = twitter_api.search.tweets(q=query,count=100, lang='it')
+print("Request completed.")
 tweets = response['statuses']
 
 #Ask more tweets range(n) times, if they are available. (n+1 return values)
-for i in range(1):
+for i in range(99):
+    print("Indexing request",i+2,"..." ,end=" ")
     if 'next_results' in response['search_metadata']:
         max_id = dict([tuple(tok.split('=')) for tok in response['search_metadata']['next_results'][1:].split('&')])['max_id']
+        print("Request completed.")
         #print(response['search_metadata']['next_results'])
         response = twitter_api.search.tweets(q=query,count=100, lang='it', max_id = max_id)
         tweets.extend(response['statuses'])
     else:
+        #TODO: RATE LIMITING CASE HANDLING
         break
-#print(len({t['id_str'] for t in tweets}))
 
-tweet_id = randomTweetID(tweets)
-hydrated_tweet = twitter_api.statuses.show(_id=tweet_id, tweet_mode='extended')
-#print(json.dumps(hydrated_tweet,indent=1)) #Prints single tweet info
+# ---------------- JSON PREFORMATTING  ---------------- #
+print("Preformatting tweets into JSON tweetlist...", end=" ")
+tweetlist = list()
+for t in tweets:
+    tweetinfo_container = {} #Builds main tweet.
+    tweet = {} #First section: tweet specific information
+    user = {} #Second section: user specific information
 
-#TODO: If returnet tweet is a RT, full_text will be truncated in the output. Fix?
-print('@',hydrated_tweet.get('user','')['screen_name'],': ',hydrated_tweet['full_text'],sep='')
-print('Numero di favorite: {}'.format(hydrated_tweet['favorite_count']))
-print('Numero di retweet: {}'.format(hydrated_tweet['retweet_count']))
+    #TODO: CHECK IF truncated == true, ADD CASE FOR full_text
+    tweet['text'] = t['text']#field 'id' is another possible node candidate
+    tweet['created_at'] = t['created_at']
+    tweet['hashtags'] = t.get('entities','')['hashtags']
+    
+    #TODO: Should we add a field for verified users and narrow down possible hubs?
+    user['username'] = t.get('user','')['screen_name'] #field 'id' is another possible node attribute, candidate for pseudo-anonymity.
+    user['followers'] = t.get('user','')['followers_count']
+    user['following'] = t.get('user','')['friends_count']
+    user['location'] = t.get('user','')['location']
+
+    #Generate item and append to tweetlist
+    tweetinfo_container['tweet'] = tweet
+    tweetinfo_container['user'] = user
+    tweetinfo_container['retweets'] = t['retweet_count']
+    tweetinfo_container['favorites'] = t['favorite_count']
+    tweetlist.append(tweetinfo_container)
+# ---------------- JSON PREFORMATTING  ---------------- #
+print("Preformatting completed. Saving to file...")
+with open('tweetlist_database.json', 'w') as outfile:
+    json.dump(tweetlist, outfile, indent=1)
+
+print("JSON tweetlist generated. Happy analysis!")
