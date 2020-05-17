@@ -45,12 +45,14 @@ print("Edge list generated.")
 
 print('Preformatted nodes: {}'.format(twitter_d.order()))
 
-#TODO: Should we? This generates isolates. Are they to be deleted after?
-#print("Removing nodes with degree 1 or less...", end=" ")
-#to_be_removed = [x for  x in twitter_d.nodes() if twitter_d.degree(x) <= 1]
-#for x in to_be_removed:
-#    twitter_d.remove_node(x)
-#print('Done.')
+print('Removing nodes outside of Giant Component...', end='')
+weak_nodes = max(nx.weakly_connected_components(twitter_d), key=len)
+nodelist = list()
+for n in twitter_d.nodes():
+    if n not in weak_nodes:
+      nodelist.append(n)
+twitter_d.remove_nodes_from(nodelist)
+print(' '+str(len(nodelist))+ ' nodes removed.')
 
 print('Number of nodes: {}'.format(twitter_d.order()))
 print('Number of links: {}'.format(twitter_d.size()))
