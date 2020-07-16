@@ -38,9 +38,7 @@ for user in dataset:
         if username == rt_oc_user:
             continue #User is retweeting himself; avoid self-loops
         if (twitter_d.has_edge(username, rt_oc_user) != True):
-            twitter_d.add_edge(username, rt_oc_user, weight=1)
-        else:
-            twitter_d[username][rt_oc_user]['weight'] += 1
+            twitter_d.add_edge(username, rt_oc_user)
 print("Edge list generated.")
 
 print('Preformatted nodes: {}'.format(twitter_d.order()))
@@ -59,4 +57,4 @@ print('Number of links: {}'.format(twitter_d.size()))
 density = nx.density(twitter_d)
 print('Density: {}'.format(density))
 
-nx.write_gexf(twitter_d, "dataset.gexf")
+#nx.write_gexf(twitter_d, "dataset.gexf")
