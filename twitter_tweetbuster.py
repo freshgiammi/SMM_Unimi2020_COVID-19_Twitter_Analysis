@@ -15,6 +15,12 @@ for i in dataset:
       if list(j.get("retweeted_from","").keys())[0] == handle:
           linkGenerator = "https://twitter.com/"+handle+"/status/"+str(j.get("retweeted_from","")[handle])
           links.append(linkGenerator)
-links = list(set(links))
-for i in links:
-    print(i)
+uniquetweets = list(set(links))
+for i in uniquetweets:
+    num = 0
+    for j in links:
+        if j == i:
+            num += 1 
+    print("{}, retweeted {} times.".format(i,num))
+
+
